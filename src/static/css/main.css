@@ -2,3 +2,7 @@
 #login-form {
     margin-top: 25px;
 }
+/*interact with login form by it's class*/
+.page-form {
+    max-width: 480px;
+}
