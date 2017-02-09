@@ -5,18 +5,17 @@ from src.models.blog import Blog
 from src.models.post import Post
 from src.models.user import User
 
-app = Flask(__name__)  # Create a Flask app, ie an object of the Flask class
-app.secret_key = "test"  # This insecure key is just for testing purposes
+app = Flask(__name__)
+app.secret_key = "not-for-production"
 
 
-# Create app endpoints
 @app.route('/')
 def home_template():
-    return  render_template('home.html')
+    return render_template('home.html')
 
 
-@app.route('/login')  # Route or endpoint, like mysite.com/api/login
-def login_template():  # A view associated with the route
+@app.route('/login')
+def login_template():
     return render_template('login.html')
 
 
@@ -24,12 +23,13 @@ def login_template():  # A view associated with the route
 def register_template():
     return render_template('register.html')
 
-@app.before_first_request  # This decorator will allow DB init before first request
+
+@app.before_first_request
 def initialize_database():
     Database.initialize()
 
 
-@app.route('/auth/login', methods=['POST'])  # This route will accept only post requests
+@app.route('/auth/login', methods=['POST'])  # indicate allowed methods
 def login_user():
     email = request.form['email']  # request data from request.form dictionary
     password = request.form['password']
@@ -39,7 +39,7 @@ def login_user():
     else:
         session['email'] = None  # if the user login is not valid, remove email from session
 
-    return render_template("profile.html", email=session['email'])  # Render template with some data from session
+    return render_template("profile.html", email=session['email'])  # render template with some data from session
 
 
 @app.route('/auth/register', methods=['POST'])
@@ -55,10 +55,10 @@ def register_user():
 @app.route('/blogs/<string:user_id>')
 @app.route('/blogs')
 def user_blogs(user_id=None):
-    if user_id is not None:  # If a user_id is not None, we access first route
+    if user_id is not None:  # if a user_id is not None, we access first route
         user = User.get_by_id(user_id)
     else:
-        user = User.get_by_email(email=session['email'])  # This way we are accessing our own blogs
+        user = User.get_by_email(email=session['email'])  # this way we are accessing our own blogs
 
     blogs = user.get_blogs()
 
@@ -72,6 +72,7 @@ def create_new_blog():
     if request.method == 'GET':
         # TODO after a user creates a blog, we need to change a route from blogs/new to blogs
         return render_template('new_blog.html')
+
     # If method is POST, we need to accept the data sent to this endpoint
     # And create new blog based on that data
     else:
@@ -85,7 +86,6 @@ def create_new_blog():
         # make_response function allows us to redirect a user to another route
         # this function takes another function (view) as a parameter
         return make_response(user_blogs(user._id))
-
 
 
 @app.route('/posts/<string:blog_id>')
@@ -109,8 +109,6 @@ def create_new_post(blog_id):
         new_post = Post(blog_id, title, content, user.email)
         new_post.save_to_mongo()
 
-        # make_response function allows us to redirect a user to another route
-        # this function takes another function (view) as a parameter
         return make_response(blog_posts(blog_id))
 
 if __name__ == '__main__':

@@ -13,11 +13,11 @@ class User(object):
         self.password = password
         self._id = uuid.uuid4().hex if _id is None else _id
 
-    @classmethod  # We are using class method because we won't have a user object at that time
+    @classmethod
     def get_by_email(cls, email):
         data = Database.find_one(collection='users',
                                  query={'email': email})
-        if data is not None:  # By default, if data will be None, the method will return None
+        if data is not None:
             return cls(**data)  # Return user class object constructed from data
 
     @classmethod
@@ -31,14 +31,15 @@ class User(object):
     def login_valid(email, password):
         # Check whether a user's email matches the password they've sent
         user = User.get_by_email(email)
+
         if user is not None:
-            # Check the password
             return user.password == password
         return False
 
     @classmethod
     def register(cls, email, password):
         user = cls.get_by_email(email)
+
         if user is None:
             # User doesn't exist, we can create one
             new_user = cls(email, password)
@@ -56,7 +57,7 @@ class User(object):
 
     @staticmethod
     def logout():
-        session['email'] = None  # Removing email from the session log out a user
+        session['email'] = None  # Removing email from the session logs a user out
 
     def get_blogs(self):
         return Blog.find_by_author_id(self._id)
